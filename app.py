@@ -172,6 +172,88 @@ else:
 st.markdown("**Conclusión (Q3):** Los resultados muestran que German Lopez (395.000) y Marcial Mutis (265.000) son los principales contribuyentes, seguidos por Omar Borja (210.000). Los demás socios presentan ingresos menores pero constantes, alrededor de 120.000, mientras que algunos como Amanda Murillas y Luis Ernesto Granada registran montos mínimos. Esto evidencia una alta concentración de ingresos en pocos miembros clave, donde los tres primeros representan la mayor parte del total.")
 
 
+
+# Q4. Total de Ingresos y Egresos (Balance General)
+
+st.header("Q4. Total de Ingresos y Egresos (Balance General)")
+
+sql_q4 = """
+SELECT
+  SUM(abono) AS total_ingresos,
+  SUM(prestamo) AS total_egresos
+FROM caja2025;
+"""
+
+df_q4 = pd.read_sql_query(sql_q4, conn)
+
+st.subheader("Resumen general de caja")
+st.dataframe(df_q4, use_container_width=True)
+
+# Gráfico de barras comparando ingresos y egresos totales
+if not df_q4.empty:
+    df_q4_melt = df_q4.melt(var_name="Tipo", value_name="Valor")
+    chart_q4 = (
+        alt.Chart(df_q4_melt)
+          .mark_bar()
+          .encode(
+              x=alt.X("Valor:Q", title="Valor total"),
+              y=alt.Y("Tipo:N", title="Categoría", sort="-x"),
+              color=alt.Color("Tipo:N", title="")
+          )
+          .properties(height=200)
+    )
+    st.altair_chart(chart_q4, use_container_width=True)
+
+st.markdown("**Conclusión (Q4):** Los ingresos acumulados superan los egresos totales, indicando un balance de caja positivo durante el periodo analizado.")
+
+
+# Q4. Total de Ingresos, Egresos y Balance Neto
+
+st.header("Q4. Total de Ingresos, Egresos y Balance Neto")
+
+sql_q4 = """
+SELECT
+  SUM(abono) AS total_ingresos,
+  SUM(prestamo) AS total_egresos,
+  SUM(abono) - SUM(prestamo) AS balance_neto
+FROM caja2025;
+"""
+
+df_q4 = pd.read_sql_query(sql_q4, conn)
+
+st.subheader("Resumen general de caja")
+st.dataframe(df_q4, use_container_width=True)
+
+# Gráfico de barras
+if not df_q4.empty:
+    df_q4_melt = df_q4.melt(var_name="Categoría", value_name="Valor")
+    chart_q4 = (
+        alt.Chart(df_q4_melt)
+        .mark_bar()
+        .encode(
+            x=alt.X("Valor:Q", title="Valor total"),
+            y=alt.Y("Categoría:N", sort="-x", title=""),
+            color=alt.Color("Categoría:N", title="")
+        )
+        .properties(height=250)
+    )
+    st.altair_chart(chart_q4, use_container_width=True)
+
+# Conclusión en español
+balance_neto = float(df_q4["balance_neto"].iloc[0]) if not df_q4.empty else 0
+if balance_neto > 0:
+    st.markdown(
+        f"**Conclusión (Q4):** Los ingresos totales superan los egresos, con un **balance neto positivo de {balance_neto:,.0f}**. "
+        "Esto refleja una gestión financiera eficiente y un flujo de caja saludable."
+    )
+else:
+    st.markdown(
+        f"**Conclusión (Q4):** Los egresos totales superan los ingresos, con un **balance neto negativo de {abs(balance_neto):,.0f}**. "
+        "Esto sugiere la necesidad de revisar los gastos operativos durante el periodo analizado."
+    )
+
+
+
 # Cerrar conexión
 
 conn.close()
