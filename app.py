@@ -6,16 +6,16 @@ import sqlite3
 from datetime import date
 import altair as alt
 
-st.title("📊 QuimQuinAgro – Tablero contable (SQL fijas)")
+st.title("📊 QuimQuinAgro – Tablero Contable")
 
-# ------------------------------------------------------------
+
 # Conexión a la base de datos (ruta local)
-# ------------------------------------------------------------
+
 conn = sqlite3.connect("contabilidad.db")
 
-# ======================================================================
-# Q1. Caja mensual (ingresos vs. egresos por mes)  ← SQL PREDEFINIDA
-# ======================================================================
+
+# Q1. Caja mensual (ingresos vs. egresos por mes)
+
 st.header("Q1. Caja mensual (Ingresos vs. Egresos por mes)")
 
 # Formulario sencillo: fechas de inicio y fin
@@ -60,12 +60,12 @@ if not df_q1.empty:
     )
     st.altair_chart(chart_q1, use_container_width=True)
 
-st.markdown("**Conclusión (Q1):** escribe aquí 2–3 líneas con la lectura del flujo de caja mensual.")
+st.markdown("**Conclusión (Q1):** Entre enero y abril de 2025 la caja muestra meses positivos: los ingresos superan a los egresos, con picos en enero y febrero. Marzo y mayo registran ingresos bajos y sin egresos, mientras que septiembre aparece como el único mes neto negativo (0 ingresos vs 90k de egresos). En conjunto, el flujo es sólido a inicios de año y se debilita hacia mediados, con un desbalance puntual en septiembre.")
 
 
-# ======================================================================
-# Q2. Top 10 egresos (por detalle)  ← SQL PREDEFINIDA
-# ======================================================================
+
+# Q2. Top 10 egresos (por detalle)
+
 st.header("Q2. Top 10 egresos (Caja)")
 
 # Formulario: fechas de inicio y fin
@@ -105,16 +105,15 @@ if not df_q2.empty:
     )
     st.altair_chart(chart_q2, use_container_width=True)
 
-st.markdown("**Conclusión (Q2):** comenta brevemente en qué conceptos se concentran los egresos.")
+st.markdown("**Conclusión (Q2):** Los mayores egresos corresponden a recibo de caja 169 y recibo de caja 164, ambos asociados a Yamile Vera, con un valor de 500.000 cada uno. Otros desembolsos importantes son los de Brigitte Caterine Herrera (300.000) y María Julieth Madrid (100.000). Los demás registros presentan montos menores a 100.000, lo que indica que un pequeño grupo de pagos concentra la mayor parte de las salidas totales, reflejando una fuerte concentración en determinados beneficiarios.")
 
 
-# ======================================================================
-# Q3. Ingresos por socio (CXC)  ← SQL PREDEFINIDA
-# ======================================================================
+
+# Q3. Ingresos por socio (CXC) 
+
 st.header("Q3. Ingresos por socio (CXC)")
 
-# NOTA: la tabla cxc2020 no tiene fecha; el filtro de fechas no aplica.
-st.info("La tabla **cxc2020** no tiene columna de fecha; este análisis usa todos los registros.")
+st.info("La tabla **cxc2020** no tiene columna de fecha, este análisis usa todos los registros.")
 
 # Selectbox con socios (+ opción 'Todos')
 socios = pd.read_sql_query("SELECT DISTINCT socio FROM cxc2020 ORDER BY socio;", conn)["socio"].tolist()
@@ -122,8 +121,8 @@ socios_opc = ["Todos"] + socios
 socio_sel = st.selectbox("Socio", socios_opc)
 
 # Consulta fija:
-# - Si “Todos”: ranking de ingresos por socio
-# - Si un socio específico: total de ese socio
+# Si “Todos”: ranking de ingresos por socio
+# Si un socio específico: total de ese socio
 if socio_sel == "Todos":
     sql_q3 = """
     SELECT socio, SUM(valor) AS ingresos
@@ -170,9 +169,9 @@ else:
         )
         st.altair_chart(chart_q3s, use_container_width=True)
 
-st.markdown("**Conclusión (Q3):** describe la concentración de ingresos por socio y posibles dependencias.")
+st.markdown("**Conclusión (Q3):** Los resultados muestran que German Lopez (395.000) y Marcial Mutis (265.000) son los principales contribuyentes, seguidos por Omar Borja (210.000). Los demás socios presentan ingresos menores pero constantes, alrededor de 120.000, mientras que algunos como Amanda Murillas y Luis Ernesto Granada registran montos mínimos. Esto evidencia una alta concentración de ingresos en pocos miembros clave, donde los tres primeros representan la mayor parte del total.")
 
-# ------------------------------------------------------------
+
 # Cerrar conexión
-# ------------------------------------------------------------
+
 conn.close()
